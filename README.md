@@ -18,11 +18,13 @@ At 60fps with multiple signals per frame, this creates GC pressure and microstut
 
 ## Usage
 ```typescript
+import { Ferrsign0, Ferrsign1, Ferrsign2 } from "ferrsign";
+
 const onTick = new Ferrsign1<number>();
 const onClick = new Ferrsign2<number, number>();
 const onComplete = new Ferrsign0();
 
-onTick.on((deltaTime) => { /* deltaTime: number */ });
+onTick.on((dt) => { /* dt: number */ });
 onClick.on((x, y) => { /* x: number, y: number */ });
 onComplete.once(() => { /* ... */ });
 
@@ -41,14 +43,26 @@ All classes share the same interface:
 - `off(callback)` — unsubscribe
 - `emit(...)` — notify subscribers (argument count matches class)
 
-Read-only view (for exposing signals without emit access):
+## Read-only views
+
+For exposing signals without emit access:
 ```typescript
-interface FerrsignView<T extends unknown[]> {
-  on(callback: Callback<T>): void;
-  once(callback: Callback<T>): void;
-  off(callback: Callback<T>): void;
+import { Ferrsign1, FerrsignView1 } from "ferrsign";
+
+class Player {
+  private readonly _onDamage = new Ferrsign1<number>();
+  
+  get onDamage(): FerrsignView1<number> { 
+    return this._onDamage; 
+  }
 }
+
+const player = new Player();
+player.onDamage.on((amount) => { /* ... */ }); // ✓
+player.onDamage.emit(10);  // ✗ Error — no emit on view
 ```
+
+Available views: `FerrsignView0`, `FerrsignView1<A>`, `FerrsignView2<A, B>`, `FerrsignView3<A, B, C>`.
 
 ## Limitations
 
