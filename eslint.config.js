@@ -34,8 +34,7 @@ export default [
       "@typescript-eslint/no-unnecessary-type-constraint": "error",
       "@typescript-eslint/no-unnecessary-template-expression": "error",
       "@typescript-eslint/no-unnecessary-qualifier": "error",
-      "@typescript-eslint/no-unnecessary-parameter-property-assignment":
-        "error",
+      "@typescript-eslint/no-unnecessary-parameter-property-assignment": "error",
       "@typescript-eslint/no-unnecessary-boolean-literal-compare": "error",
       "@typescript-eslint/no-this-alias": "error",
       "@typescript-eslint/no-redundant-type-constituents": "error",
@@ -46,8 +45,6 @@ export default [
       "@typescript-eslint/no-empty-interface": "error",
       "@typescript-eslint/no-duplicate-type-constituents": "error",
       "@typescript-eslint/no-duplicate-enum-values": "error",
-      // "max-params": "off",
-      // "@typescript-eslint/max-params": "error",
 
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": "error",
@@ -55,26 +52,10 @@ export default [
       "no-debugger": "error",
       "no-implicit-coercion": "error",
       "no-extend-native": "error",
-      "no-magic-numbers": [
-        "warn",
-        {
-          ignore: [
-            0, 1, -1, 2, 0xff, 0xffff, 0xffffff, 360, 270, 180, 90, 100, 1000,
-          ],
-          ignoreEnums: true,
-          ignoreArrayIndexes: true,
-          enforceConst: true,
-          ignoreDefaultValues: true,
-          ignoreClassFieldInitialValues: true,
-        },
-      ],
       eqeqeq: ["error", "always"],
       curly: ["error", "all"],
 
-      "@typescript-eslint/explicit-function-return-type": [
-        "error",
-        { allowExpressions: false },
-      ],
+      "@typescript-eslint/explicit-function-return-type": ["error", { allowExpressions: false }],
       "@typescript-eslint/explicit-module-boundary-types": "error",
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-inferrable-types": "warn",
@@ -149,10 +130,7 @@ export default [
       eqeqeq: ["error", "always"],
       curly: ["error", "all"],
 
-      "@typescript-eslint/explicit-function-return-type": [
-        "error",
-        { allowExpressions: false },
-      ],
+      "@typescript-eslint/explicit-function-return-type": ["error", { allowExpressions: false }],
       "@typescript-eslint/explicit-module-boundary-types": "error",
       "@typescript-eslint/no-inferrable-types": "warn",
       "@typescript-eslint/no-floating-promises": "error",
