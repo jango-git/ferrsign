@@ -1,5 +1,6 @@
 import type { Callback } from "./Callback";
 import type { FerrsignView } from "./FerrsignView";
+import type { Unsubscribe } from "./Unsubscribe";
 
 export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<T> {
   protected _callback0?: Callback<T>;
@@ -22,20 +23,21 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
   protected _currentEmitDepth = 0;
   protected _isCleanupRequired = false;
 
-  public on(callback: Callback<T>): void {
+  public on(callback: Callback<T>): Unsubscribe {
     if (process.env.NODE_ENV !== "production") {
       this.assertNotRegistered(callback);
     }
 
     if (this._currentEmitDepth > 0) {
       (this._pendingCallbacks ??= []).push(callback);
-      return;
+    } else {
+      this.addImmediate(callback);
     }
 
-    this.addImmediate(callback);
+    return this.unsubscriber(callback);
   }
 
-  public once(callback: Callback<T>): void {
+  public once(callback: Callback<T>): Unsubscribe {
     if (process.env.NODE_ENV !== "production") {
       this.assertNotRegistered(callback);
     }
@@ -43,35 +45,22 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
     if (this._currentEmitDepth > 0) {
       (this._pendingCallbacks ??= []).push(callback);
       (this._pendingOnceCallbacks ??= new Set()).add(callback);
-      return;
+    } else {
+      (this._onceCallbacks ??= new Set()).add(callback);
+      this.addImmediate(callback);
     }
 
-    (this._onceCallbacks ??= new Set()).add(callback);
-    this.addImmediate(callback);
+    return this.unsubscriber(callback);
   }
 
   public off(callback: Callback<T>): void {
-    if (this._pendingCallbacks !== undefined) {
-      const pendingCallbackIndex = this._pendingCallbacks.indexOf(callback);
-      if (pendingCallbackIndex !== -1) {
-        this._pendingCallbacks.splice(pendingCallbackIndex, 1);
-        this._pendingOnceCallbacks?.delete(callback);
-        return;
+    if (process.env.NODE_ENV !== "production") {
+      if (this._pendingCallbacks?.includes(callback) !== true) {
+        this.assertRegistered(callback);
       }
     }
 
-    if (process.env.NODE_ENV !== "production") {
-      this.assertRegistered(callback);
-    }
-
-    this._onceCallbacks?.delete(callback);
-
-    if (this._currentEmitDepth > 0) {
-      this.markForRemoval(callback);
-      return;
-    }
-
-    this.removeImmediate(callback);
+    this.detach(callback);
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention -- underscore prefix needed for minification, protected methods are not auto-minified
@@ -99,6 +88,40 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
       this._pendingCallbacks = undefined;
       this._pendingOnceCallbacks = undefined;
     }
+  }
+
+  // Called a second time, it does nothing, so it cannot remove a later subscription of the same
+  // callback.
+  private unsubscriber(callback: Callback<T>): Unsubscribe {
+    let isSubscribed = true;
+    return (): void => {
+      if (isSubscribed) {
+        isSubscribed = false;
+        this.detach(callback);
+      }
+    };
+  }
+
+  // Removes `callback` wherever it is registered, and does nothing if it is not: an unsubscribe
+  // may run after a once callback has already been removed by its emit.
+  private detach(callback: Callback<T>): void {
+    if (this._pendingCallbacks !== undefined) {
+      const pendingCallbackIndex = this._pendingCallbacks.indexOf(callback);
+      if (pendingCallbackIndex !== -1) {
+        this._pendingCallbacks.splice(pendingCallbackIndex, 1);
+        this._pendingOnceCallbacks?.delete(callback);
+        return;
+      }
+    }
+
+    this._onceCallbacks?.delete(callback);
+
+    if (this._currentEmitDepth > 0) {
+      this.markForRemoval(callback);
+      return;
+    }
+
+    this.removeImmediate(callback);
   }
 
   private addImmediate(callback: Callback<T>): void {

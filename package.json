@@ -1,6 +1,6 @@
 {
   "name": "ferrsign",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "High-performance typed signals for frequent emissions",
   "scripts": {
     "clean": "rm -rf dist",

@@ -38,10 +38,18 @@ onComplete.emit();
 
 All classes share the same interface:
 
-- `on(callback)` — subscribe
-- `once(callback)` — subscribe, auto-unsubscribe after first emit
-- `off(callback)` — unsubscribe
-- `emit(...)` — notify subscribers (argument count matches class)
+- `on(callback)` - subscribe; returns an unsubscribe function
+- `once(callback)` - subscribe, auto-unsubscribe after first emit; returns an unsubscribe function
+- `off(callback)` - unsubscribe
+- `emit(...)` - notify subscribers (argument count matches class)
+
+The returned function removes the callback, so an inline arrow function can be unsubscribed
+without keeping a reference to it. Calling it after the callback is gone (a `once` callback that
+already fired, or a second call) does nothing.
+```typescript
+const unsubscribe = onTick.on((dt) => { /* ... */ });
+unsubscribe();
+```
 
 ## Read-only views
 
@@ -72,6 +80,12 @@ Available views: `FerrsignView0`, `FerrsignView1<A>`, `FerrsignView2<A, B>`, `Fe
 ```
 - First 10 subscribers stored in direct slots, rest in array. Optimized for typical case of 1-5 listeners per signal.
 - Dev-mode checks (duplicate subscription, unsubscribing non-existent callback) stripped in production build.
+
+## Throwing callbacks
+
+A callback that throws stops the current `emit`: the callbacks after it are not called for that
+emit, and the error reaches the caller of `emit`. The signal stays usable, and subscriptions and
+removals made during that emit are applied.
 
 ## Safe during emit
 

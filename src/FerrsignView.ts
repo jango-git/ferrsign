@@ -1,8 +1,9 @@
 import type { Callback } from "./Callback";
+import type { Unsubscribe } from "./Unsubscribe";
 
 export interface FerrsignView<T extends unknown[] = []> {
-  on(callback: Callback<T>): void;
-  once(callback: Callback<T>): void;
+  on(callback: Callback<T>): Unsubscribe;
+  once(callback: Callback<T>): Unsubscribe;
   off(callback: Callback<T>): void;
 }
 

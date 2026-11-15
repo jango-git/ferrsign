@@ -79,6 +79,8 @@ export default {
     nodeResolve({ extensions: [".js", ".ts"] }),
     typescript({
       tsconfig: "tsconfig.json",
+      // The default "*.ts+(|x)" no longer matches .ts files with newer picomatch.
+      include: ["src/**/*.ts"],
       useTsconfigDeclarationDir: true,
       transformers: [
         (service) => ({
