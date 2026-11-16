@@ -1,56 +1,55 @@
 {
   "name": "ferrsign",
-  "version": "0.0.5",
-  "description": "High-performance typed signals for frequent emissions",
-  "scripts": {
-    "clean": "rm -rf dist",
-    "build": "npm run clean && rollup -c",
-    "build:prod": "npm run clean && NODE_ENV=production rollup -c",
-    "prepublishOnly": "npm run build:prod"
-  },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": {
-        "development": "./dist/index.js",
-        "production": "./dist/index.min.js",
-        "default": "./dist/index.min.js"
-      }
-    },
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "dist"
-  ],
-  "sideEffects": false,
+  "version": "0.0.6",
+  "description": "Typed signals with 0-3 arguments for frequent emissions",
   "keywords": [
     "signals",
     "events",
-    "playable",
-    "mobile-ads",
+    "emitter",
+    "playable-ads",
     "performance",
     "typescript"
   ],
-  "author": "jango",
-  "license": "MIT",
+  "homepage": "https://github.com/jango-git/ferrsign#readme",
+  "bugs": {
+    "url": "https://github.com/jango-git/ferrsign/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jango-git/ferrsign.git"
   },
+  "license": "MIT",
+  "author": "jango",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "lint": "eslint src",
+    "format": "prettier --write . && eslint src --fix",
+    "prepublishOnly": "npm run build"
+  },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-terser": "^0.4.4",
     "@types/node": "^25.0.2",
-    "@typescript-eslint/eslint-plugin": "^8.32.0",
-    "@typescript-eslint/parser": "^8.32.0",
-    "eslint": "^9.26.0",
-    "rollup": "^4.40.2",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "ts-transformer-minify-privates": "^1.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.9.10",
     "typescript": "^5.8.3"
   }
 }

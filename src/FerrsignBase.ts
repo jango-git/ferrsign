@@ -1,35 +1,35 @@
-import type { Callback } from "./Callback";
-import type { FerrsignView } from "./FerrsignView";
-import type { Unsubscribe } from "./Unsubscribe";
+import type { Callback } from "./Callback.js";
+import type { FerrsignView } from "./FerrsignView.js";
+import type { Unsubscribe } from "./Unsubscribe.js";
 
 export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<T> {
-  protected _callback0?: Callback<T>;
-  protected _callback1?: Callback<T>;
-  protected _callback2?: Callback<T>;
-  protected _callback3?: Callback<T>;
-  protected _callback4?: Callback<T>;
-  protected _callback5?: Callback<T>;
-  protected _callback6?: Callback<T>;
-  protected _callback7?: Callback<T>;
-  protected _callback8?: Callback<T>;
-  protected _callback9?: Callback<T>;
+  protected callback0?: Callback<T>;
+  protected callback1?: Callback<T>;
+  protected callback2?: Callback<T>;
+  protected callback3?: Callback<T>;
+  protected callback4?: Callback<T>;
+  protected callback5?: Callback<T>;
+  protected callback6?: Callback<T>;
+  protected callback7?: Callback<T>;
+  protected callback8?: Callback<T>;
+  protected callback9?: Callback<T>;
 
-  protected _restCallbacks?: (Callback<T> | undefined)[];
-  protected _onceCallbacks?: Set<Callback<T>>;
+  protected restCallbacks?: (Callback<T> | undefined)[];
+  protected onceCallbacks?: Set<Callback<T>>;
 
-  protected _pendingCallbacks?: Callback<T>[];
-  protected _pendingOnceCallbacks?: Set<Callback<T>>;
+  protected pendingCallbacks?: Callback<T>[];
+  protected pendingOnceCallbacks?: Set<Callback<T>>;
 
-  protected _currentEmitDepth = 0;
-  protected _isCleanupRequired = false;
+  protected currentEmitDepth = 0;
+  protected isCleanupRequired = false;
 
   public on(callback: Callback<T>): Unsubscribe {
     if (process.env.NODE_ENV !== "production") {
       this.assertNotRegistered(callback);
     }
 
-    if (this._currentEmitDepth > 0) {
-      (this._pendingCallbacks ??= []).push(callback);
+    if (this.currentEmitDepth > 0) {
+      (this.pendingCallbacks ??= []).push(callback);
     } else {
       this.addImmediate(callback);
     }
@@ -42,11 +42,11 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
       this.assertNotRegistered(callback);
     }
 
-    if (this._currentEmitDepth > 0) {
-      (this._pendingCallbacks ??= []).push(callback);
-      (this._pendingOnceCallbacks ??= new Set()).add(callback);
+    if (this.currentEmitDepth > 0) {
+      (this.pendingCallbacks ??= []).push(callback);
+      (this.pendingOnceCallbacks ??= new Set()).add(callback);
     } else {
-      (this._onceCallbacks ??= new Set()).add(callback);
+      (this.onceCallbacks ??= new Set()).add(callback);
       this.addImmediate(callback);
     }
 
@@ -55,7 +55,7 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
 
   public off(callback: Callback<T>): void {
     if (process.env.NODE_ENV !== "production") {
-      if (this._pendingCallbacks?.includes(callback) !== true) {
+      if (this.pendingCallbacks?.includes(callback) !== true) {
         this.assertRegistered(callback);
       }
     }
@@ -63,30 +63,29 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
     this.detach(callback);
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention -- underscore prefix needed for minification, protected methods are not auto-minified
-  protected _postEmit(): void {
-    if (this._onceCallbacks !== undefined && this._onceCallbacks.size > 0) {
-      this._onceCallbacks.forEach((callback) => {
+  protected postEmit(): void {
+    if (this.onceCallbacks !== undefined && this.onceCallbacks.size > 0) {
+      this.onceCallbacks.forEach((callback) => {
         this.markForRemoval(callback);
       });
-      this._onceCallbacks = undefined;
+      this.onceCallbacks = undefined;
     }
 
-    if (this._isCleanupRequired) {
-      this._isCleanupRequired = false;
+    if (this.isCleanupRequired) {
+      this.isCleanupRequired = false;
       this.cleanupSlots();
     }
 
-    if (this._pendingCallbacks !== undefined && this._pendingCallbacks.length > 0) {
-      for (let index = 0; index < this._pendingCallbacks.length; index++) {
-        const callback = this._pendingCallbacks[index];
-        if (this._pendingOnceCallbacks?.has(callback) === true) {
-          (this._onceCallbacks ??= new Set()).add(callback);
+    if (this.pendingCallbacks !== undefined && this.pendingCallbacks.length > 0) {
+      for (let index = 0; index < this.pendingCallbacks.length; index++) {
+        const callback = this.pendingCallbacks[index];
+        if (this.pendingOnceCallbacks?.has(callback) === true) {
+          (this.onceCallbacks ??= new Set()).add(callback);
         }
         this.addImmediate(callback);
       }
-      this._pendingCallbacks = undefined;
-      this._pendingOnceCallbacks = undefined;
+      this.pendingCallbacks = undefined;
+      this.pendingOnceCallbacks = undefined;
     }
   }
 
@@ -105,18 +104,18 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
   // Removes `callback` wherever it is registered, and does nothing if it is not: an unsubscribe
   // may run after a once callback has already been removed by its emit.
   private detach(callback: Callback<T>): void {
-    if (this._pendingCallbacks !== undefined) {
-      const pendingCallbackIndex = this._pendingCallbacks.indexOf(callback);
+    if (this.pendingCallbacks !== undefined) {
+      const pendingCallbackIndex = this.pendingCallbacks.indexOf(callback);
       if (pendingCallbackIndex !== -1) {
-        this._pendingCallbacks.splice(pendingCallbackIndex, 1);
-        this._pendingOnceCallbacks?.delete(callback);
+        this.pendingCallbacks.splice(pendingCallbackIndex, 1);
+        this.pendingOnceCallbacks?.delete(callback);
         return;
       }
     }
 
-    this._onceCallbacks?.delete(callback);
+    this.onceCallbacks?.delete(callback);
 
-    if (this._currentEmitDepth > 0) {
+    if (this.currentEmitDepth > 0) {
       this.markForRemoval(callback);
       return;
     }
@@ -125,159 +124,159 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
   }
 
   private addImmediate(callback: Callback<T>): void {
-    if (this._callback0 === undefined) {
-      this._callback0 = callback;
+    if (this.callback0 === undefined) {
+      this.callback0 = callback;
       return;
     }
-    if (this._callback1 === undefined) {
-      this._callback1 = callback;
+    if (this.callback1 === undefined) {
+      this.callback1 = callback;
       return;
     }
-    if (this._callback2 === undefined) {
-      this._callback2 = callback;
+    if (this.callback2 === undefined) {
+      this.callback2 = callback;
       return;
     }
-    if (this._callback3 === undefined) {
-      this._callback3 = callback;
+    if (this.callback3 === undefined) {
+      this.callback3 = callback;
       return;
     }
-    if (this._callback4 === undefined) {
-      this._callback4 = callback;
+    if (this.callback4 === undefined) {
+      this.callback4 = callback;
       return;
     }
-    if (this._callback5 === undefined) {
-      this._callback5 = callback;
+    if (this.callback5 === undefined) {
+      this.callback5 = callback;
       return;
     }
-    if (this._callback6 === undefined) {
-      this._callback6 = callback;
+    if (this.callback6 === undefined) {
+      this.callback6 = callback;
       return;
     }
-    if (this._callback7 === undefined) {
-      this._callback7 = callback;
+    if (this.callback7 === undefined) {
+      this.callback7 = callback;
       return;
     }
-    if (this._callback8 === undefined) {
-      this._callback8 = callback;
+    if (this.callback8 === undefined) {
+      this.callback8 = callback;
       return;
     }
-    if (this._callback9 === undefined) {
-      this._callback9 = callback;
+    if (this.callback9 === undefined) {
+      this.callback9 = callback;
       return;
     }
-    (this._restCallbacks ??= []).push(callback);
+    (this.restCallbacks ??= []).push(callback);
   }
 
   private markForRemoval(callback: Callback<T>): void {
-    this._isCleanupRequired = true;
+    this.isCleanupRequired = true;
 
-    if (this._callback0 === callback) {
-      this._callback0 = undefined;
+    if (this.callback0 === callback) {
+      this.callback0 = undefined;
       return;
     }
-    if (this._callback1 === callback) {
-      this._callback1 = undefined;
+    if (this.callback1 === callback) {
+      this.callback1 = undefined;
       return;
     }
-    if (this._callback2 === callback) {
-      this._callback2 = undefined;
+    if (this.callback2 === callback) {
+      this.callback2 = undefined;
       return;
     }
-    if (this._callback3 === callback) {
-      this._callback3 = undefined;
+    if (this.callback3 === callback) {
+      this.callback3 = undefined;
       return;
     }
-    if (this._callback4 === callback) {
-      this._callback4 = undefined;
+    if (this.callback4 === callback) {
+      this.callback4 = undefined;
       return;
     }
-    if (this._callback5 === callback) {
-      this._callback5 = undefined;
+    if (this.callback5 === callback) {
+      this.callback5 = undefined;
       return;
     }
-    if (this._callback6 === callback) {
-      this._callback6 = undefined;
+    if (this.callback6 === callback) {
+      this.callback6 = undefined;
       return;
     }
-    if (this._callback7 === callback) {
-      this._callback7 = undefined;
+    if (this.callback7 === callback) {
+      this.callback7 = undefined;
       return;
     }
-    if (this._callback8 === callback) {
-      this._callback8 = undefined;
+    if (this.callback8 === callback) {
+      this.callback8 = undefined;
       return;
     }
-    if (this._callback9 === callback) {
-      this._callback9 = undefined;
+    if (this.callback9 === callback) {
+      this.callback9 = undefined;
       return;
     }
 
-    if (this._restCallbacks !== undefined) {
-      const index = this._restCallbacks.indexOf(callback);
+    if (this.restCallbacks !== undefined) {
+      const index = this.restCallbacks.indexOf(callback);
       if (index !== -1) {
-        this._restCallbacks[index] = undefined;
+        this.restCallbacks[index] = undefined;
       }
     }
   }
 
   private removeImmediate(callback: Callback<T>): void {
-    if (this._callback0 === callback) {
-      this._callback0 = undefined;
+    if (this.callback0 === callback) {
+      this.callback0 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback1 === callback) {
-      this._callback1 = undefined;
+    if (this.callback1 === callback) {
+      this.callback1 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback2 === callback) {
-      this._callback2 = undefined;
+    if (this.callback2 === callback) {
+      this.callback2 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback3 === callback) {
-      this._callback3 = undefined;
+    if (this.callback3 === callback) {
+      this.callback3 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback4 === callback) {
-      this._callback4 = undefined;
+    if (this.callback4 === callback) {
+      this.callback4 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback5 === callback) {
-      this._callback5 = undefined;
+    if (this.callback5 === callback) {
+      this.callback5 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback6 === callback) {
-      this._callback6 = undefined;
+    if (this.callback6 === callback) {
+      this.callback6 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback7 === callback) {
-      this._callback7 = undefined;
+    if (this.callback7 === callback) {
+      this.callback7 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback8 === callback) {
-      this._callback8 = undefined;
+    if (this.callback8 === callback) {
+      this.callback8 = undefined;
       this.cleanupSlots();
       return;
     }
-    if (this._callback9 === callback) {
-      this._callback9 = undefined;
+    if (this.callback9 === callback) {
+      this.callback9 = undefined;
       this.cleanupSlots();
       return;
     }
 
-    if (this._restCallbacks !== undefined) {
-      const index = this._restCallbacks.indexOf(callback);
+    if (this.restCallbacks !== undefined) {
+      const index = this.restCallbacks.indexOf(callback);
       if (index !== -1) {
-        this._restCallbacks.splice(index, 1);
-        if (this._restCallbacks.length === 0) {
-          this._restCallbacks = undefined;
+        this.restCallbacks.splice(index, 1);
+        if (this.restCallbacks.length === 0) {
+          this.restCallbacks = undefined;
         }
       }
     }
@@ -286,94 +285,94 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
   private cleanupSlots(): void {
     const valid: Callback<T>[] = [];
 
-    if (this._callback0 !== undefined) {
-      valid.push(this._callback0);
+    if (this.callback0 !== undefined) {
+      valid.push(this.callback0);
     }
-    if (this._callback1 !== undefined) {
-      valid.push(this._callback1);
+    if (this.callback1 !== undefined) {
+      valid.push(this.callback1);
     }
-    if (this._callback2 !== undefined) {
-      valid.push(this._callback2);
+    if (this.callback2 !== undefined) {
+      valid.push(this.callback2);
     }
-    if (this._callback3 !== undefined) {
-      valid.push(this._callback3);
+    if (this.callback3 !== undefined) {
+      valid.push(this.callback3);
     }
-    if (this._callback4 !== undefined) {
-      valid.push(this._callback4);
+    if (this.callback4 !== undefined) {
+      valid.push(this.callback4);
     }
-    if (this._callback5 !== undefined) {
-      valid.push(this._callback5);
+    if (this.callback5 !== undefined) {
+      valid.push(this.callback5);
     }
-    if (this._callback6 !== undefined) {
-      valid.push(this._callback6);
+    if (this.callback6 !== undefined) {
+      valid.push(this.callback6);
     }
-    if (this._callback7 !== undefined) {
-      valid.push(this._callback7);
+    if (this.callback7 !== undefined) {
+      valid.push(this.callback7);
     }
-    if (this._callback8 !== undefined) {
-      valid.push(this._callback8);
+    if (this.callback8 !== undefined) {
+      valid.push(this.callback8);
     }
-    if (this._callback9 !== undefined) {
-      valid.push(this._callback9);
+    if (this.callback9 !== undefined) {
+      valid.push(this.callback9);
     }
 
-    if (this._restCallbacks !== undefined) {
-      for (let index = 0; index < this._restCallbacks.length; index++) {
-        const callback = this._restCallbacks[index];
+    if (this.restCallbacks !== undefined) {
+      for (let index = 0; index < this.restCallbacks.length; index++) {
+        const callback = this.restCallbacks[index];
         if (callback !== undefined) {
           valid.push(callback);
         }
       }
-      this._restCallbacks = undefined;
+      this.restCallbacks = undefined;
     }
 
     const count = valid.length;
 
-    this._callback0 = count > 0 ? valid[0] : undefined;
-    this._callback1 = count > 1 ? valid[1] : undefined;
-    this._callback2 = count > 2 ? valid[2] : undefined;
-    this._callback3 = count > 3 ? valid[3] : undefined;
-    this._callback4 = count > 4 ? valid[4] : undefined;
-    this._callback5 = count > 5 ? valid[5] : undefined;
-    this._callback6 = count > 6 ? valid[6] : undefined;
-    this._callback7 = count > 7 ? valid[7] : undefined;
-    this._callback8 = count > 8 ? valid[8] : undefined;
-    this._callback9 = count > 9 ? valid[9] : undefined;
+    this.callback0 = count > 0 ? valid[0] : undefined;
+    this.callback1 = count > 1 ? valid[1] : undefined;
+    this.callback2 = count > 2 ? valid[2] : undefined;
+    this.callback3 = count > 3 ? valid[3] : undefined;
+    this.callback4 = count > 4 ? valid[4] : undefined;
+    this.callback5 = count > 5 ? valid[5] : undefined;
+    this.callback6 = count > 6 ? valid[6] : undefined;
+    this.callback7 = count > 7 ? valid[7] : undefined;
+    this.callback8 = count > 8 ? valid[8] : undefined;
+    this.callback9 = count > 9 ? valid[9] : undefined;
 
     if (count > 10) {
-      this._restCallbacks = valid.slice(10);
+      this.restCallbacks = valid.slice(10);
     }
   }
 
   private isInSlots(callback: Callback<T>): boolean {
-    if (this._callback0 === callback) {
+    if (this.callback0 === callback) {
       return true;
     }
-    if (this._callback1 === callback) {
+    if (this.callback1 === callback) {
       return true;
     }
-    if (this._callback2 === callback) {
+    if (this.callback2 === callback) {
       return true;
     }
-    if (this._callback3 === callback) {
+    if (this.callback3 === callback) {
       return true;
     }
-    if (this._callback4 === callback) {
+    if (this.callback4 === callback) {
       return true;
     }
-    if (this._callback5 === callback) {
+    if (this.callback5 === callback) {
       return true;
     }
-    if (this._callback6 === callback) {
+    if (this.callback6 === callback) {
       return true;
     }
-    if (this._callback7 === callback) {
+    if (this.callback7 === callback) {
       return true;
     }
-    if (this._callback8 === callback) {
+    if (this.callback8 === callback) {
       return true;
     }
-    if (this._callback9 === callback) {
+    if (this.callback9 === callback) {
       return true;
     }
     return false;
@@ -383,10 +382,10 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
     if (this.isInSlots(callback)) {
       return true;
     }
-    if (this._restCallbacks?.includes(callback) === true) {
+    if (this.restCallbacks?.includes(callback) === true) {
       return true;
     }
-    if (this._pendingCallbacks?.includes(callback) === true) {
+    if (this.pendingCallbacks?.includes(callback) === true) {
       return true;
     }
     return false;
@@ -402,7 +401,7 @@ export abstract class FerrsignBase<T extends unknown[]> implements FerrsignView<
 
   private assertRegistered(callback: Callback<T>): void {
     if (process.env.NODE_ENV !== "production") {
-      if (!this.isInSlots(callback) && this._restCallbacks?.includes(callback) !== true) {
+      if (!this.isInSlots(callback) && this.restCallbacks?.includes(callback) !== true) {
         throw new Error("Ferrsign.off: callback not registered");
       }
     }

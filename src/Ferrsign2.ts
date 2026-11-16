@@ -1,31 +1,31 @@
-import { FerrsignBase } from "./FerrsignBase";
+import { FerrsignBase } from "./FerrsignBase.js";
 
 export class Ferrsign2<A, B> extends FerrsignBase<[A, B]> {
   public emit(a: A, b: B): void {
-    this._currentEmitDepth++;
+    this.currentEmitDepth++;
 
     try {
-      this._callback0?.(a, b);
-      this._callback1?.(a, b);
-      this._callback2?.(a, b);
-      this._callback3?.(a, b);
-      this._callback4?.(a, b);
-      this._callback5?.(a, b);
-      this._callback6?.(a, b);
-      this._callback7?.(a, b);
-      this._callback8?.(a, b);
-      this._callback9?.(a, b);
+      this.callback0?.(a, b);
+      this.callback1?.(a, b);
+      this.callback2?.(a, b);
+      this.callback3?.(a, b);
+      this.callback4?.(a, b);
+      this.callback5?.(a, b);
+      this.callback6?.(a, b);
+      this.callback7?.(a, b);
+      this.callback8?.(a, b);
+      this.callback9?.(a, b);
 
-      if (this._restCallbacks !== undefined) {
-        for (let index = 0; index < this._restCallbacks.length; index++) {
-          const callback = this._restCallbacks[index];
+      if (this.restCallbacks !== undefined) {
+        for (let index = 0; index < this.restCallbacks.length; index++) {
+          const callback = this.restCallbacks[index];
           callback?.(a, b);
         }
       }
     } finally {
-      this._currentEmitDepth--;
-      if (this._currentEmitDepth === 0) {
-        this._postEmit();
+      this.currentEmitDepth--;
+      if (this.currentEmitDepth === 0) {
+        this.postEmit();
       }
     }
   }

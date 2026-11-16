@@ -1,5 +1,5 @@
-import type { Callback } from "./Callback";
-import type { Unsubscribe } from "./Unsubscribe";
+import type { Callback } from "./Callback.js";
+import type { Unsubscribe } from "./Unsubscribe.js";
 
 export interface FerrsignView<T extends unknown[] = []> {
   on(callback: Callback<T>): Unsubscribe;

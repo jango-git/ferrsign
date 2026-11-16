@@ -1,30 +1,30 @@
-import { FerrsignBase } from "./FerrsignBase";
+import { FerrsignBase } from "./FerrsignBase.js";
 
 export class Ferrsign0 extends FerrsignBase<[]> {
   public emit(): void {
-    this._currentEmitDepth++;
+    this.currentEmitDepth++;
 
     try {
-      this._callback0?.();
-      this._callback1?.();
-      this._callback2?.();
-      this._callback3?.();
-      this._callback4?.();
-      this._callback5?.();
-      this._callback6?.();
-      this._callback7?.();
-      this._callback8?.();
-      this._callback9?.();
+      this.callback0?.();
+      this.callback1?.();
+      this.callback2?.();
+      this.callback3?.();
+      this.callback4?.();
+      this.callback5?.();
+      this.callback6?.();
+      this.callback7?.();
+      this.callback8?.();
+      this.callback9?.();
 
-      if (this._restCallbacks !== undefined) {
-        for (let index = 0; index < this._restCallbacks.length; index++) {
-          this._restCallbacks[index]?.();
+      if (this.restCallbacks !== undefined) {
+        for (let index = 0; index < this.restCallbacks.length; index++) {
+          this.restCallbacks[index]?.();
         }
       }
     } finally {
-      this._currentEmitDepth--;
-      if (this._currentEmitDepth === 0) {
-        this._postEmit();
+      this.currentEmitDepth--;
+      if (this.currentEmitDepth === 0) {
+        this.postEmit();
       }
     }
   }
